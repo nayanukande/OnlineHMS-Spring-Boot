@@ -1,0 +1,84 @@
+package com.nu.reservation.service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.nu.rate.dto.SetRatesDTO;
+import com.nu.rate.feign.SetRatesFeignClient;
+import com.nu.reservation.entity.Reservation;
+import com.nu.reservation.repository.ReservationRepository;
+import com.nu.room.feign.RoomFeignClient;
+
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class ReservationServiceImpl implements ReservationService {
+
+    @Autowired
+    private ReservationRepository reservationRepository;
+    
+    @Autowired
+    private RoomFeignClient roomFeignClient;
+    
+    @Autowired
+    private SetRatesFeignClient setRatesFeignClient;
+
+    @Override
+    public Reservation createReservation(Reservation reservation) {
+        //Validate Check-in and Check-out Dates
+        if (reservation.getCheckInDate().isAfter(reservation.getCheckOutDate())) {
+            throw new IllegalArgumentException("Check-out date must be after check-in date.");
+        }
+
+        //Validate Guest Count
+        if (reservation.getNumAdults() + reservation.getNumChildren() <= 0) {
+            throw new IllegalArgumentException("At least one guest is required.");
+        }
+
+        //Ensure Manually Assigned ID Does Not Already Exist
+        if (reservationRepository.existsById(reservation.getId())) {
+            throw new IllegalArgumentException("Reservation ID already exists.");
+        }
+
+        //Find the Room (To Get Type & Default Price)
+        Room room = roomRepository.findById(reservation.getRoomId())
+            .orElseThrow(() -> new RuntimeException("Room not found"));
+
+        //Check for a Special Rate in Manager Microservice
+        Optional<SetRatesDTO> specialRate = setRatesFeignClient.getSpecialRate(
+            reservation.getCheckInDate(),
+            reservation.getCheckOutDate(),
+            reservation.getNumAdults() + reservation.getNumChildren(),
+            room.getType()
+        );
+
+        double finalPrice;
+        if (specialRate.isPresent()) {
+            //Apply Special Rate
+            SetRatesDTO rate = specialRate.get();
+            finalPrice = rate.getFirstNightPrice() + (reservation.getNumNights() - 1) * rate.getExtensionPrice();
+        } else {
+            //No Special Rate: Use Default Room Price
+            finalPrice = room.getPrice() * reservation.getNumNights();
+        }
+
+        //Set the Final Price in Reservation
+        reservation.setTotalPrice(finalPrice);
+
+        //Save Reservation in Database
+        return reservationRepository.save(reservation);
+    }
+
+
+    @Override
+    public List<Reservation> getAllReservations() {
+        return reservationRepository.findAll();
+    }
+
+    @Override
+    public Reservation getReservationById(Long id) {
+        return reservationRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Reservation not found with ID: " + id));
+    }
+}

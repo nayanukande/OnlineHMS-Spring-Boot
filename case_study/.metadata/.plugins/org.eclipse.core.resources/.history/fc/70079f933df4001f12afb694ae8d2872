@@ -1,0 +1,31 @@
+package com.nu.rest;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+import com.nu.entity.Guest;
+import com.nu.service.GuestService;
+
+@RestController
+@RequestMapping("/receptionist/guests")
+public class GuestController {
+    @Autowired
+    private GuestService guestService;
+
+    // Add Guest
+    @PostMapping("/addGuest")
+    public Guest addGuest(@RequestBody Guest guest) {
+        return guestService.addGuest(guest);
+    }
+
+    // Update Guest
+    @PutMapping("/{id}")
+    public Guest updateGuest(@PathVariable Long id, @RequestBody Guest guest) {
+        return guestService.updateGuest(id, guest);
+    }
+
+    // Delete Guest
+    @DeleteMapping("/{id}")
+    public String deleteGuest(@PathVariable Long id) {
+        return guestService.deleteGuest(id);
+    }
+}
