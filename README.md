@@ -68,9 +68,33 @@ The **Online Hotel Management System (HMS)** is a comprehensive software solutio
 - **Output**: Database record confirmation
 - **Process**: Validates and stores rate information
 
-## 🛠️ Technologies Used
+## 🚀 Tech Stack
 
-> *(Add your stack here, e.g., Java, Python, MySQL, HTML/CSS, etc.)*
+### 🧑‍💻 Programming Language & Frameworks
+- **Java**
+- **Spring Boot** (REST APIs with MVC structure)
+
+### 🔗 Microservices & Communication
+- **Eureka Server** – Service Discovery
+- **Feign Client** – Inter-service Communication
+
+### 🗄️ Database
+- **MySQL** – Relational Database
+- **JPA / Hibernate** – ORM for Database Operations
+
+### 🛠️ Development & Build Tools
+- **Maven** – Project Management & Dependency Handling
+
+### 🧪 Testing Tools
+- **Postman** – API Testing
+
+### 🏗️ Architectural Pattern
+- **Microservice Architecture**
+- **DTO (Data Transfer Object)** – Structured Communication
+
+### 📦 Other Tools & Libraries
+- **Spring Data JPA** – CRUD Operations
+- **Spring Validation** – Request Validation
 
 ## 🚀 Installation
 
